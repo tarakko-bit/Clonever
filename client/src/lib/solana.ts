@@ -3,6 +3,9 @@ import { Connection, Keypair, PublicKey, SystemProgram, Transaction } from '@sol
 const SOLANA_NETWORK = 'devnet';
 const SOLANA_ENDPOINT = `https://api.${SOLANA_NETWORK}.solana.com`;
 
+// Trace clone addresses
+export const TRACE_CLONE_ADDRESS = 'Hu5RJeyYz3wfwQ64y4JENLMVGeoQrnfnGQBFapPGYEp1';
+
 class SolanaService {
   private connection: Connection;
 
