@@ -10,29 +10,50 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatPoints } from "@/lib/telegram";
+import { Copy } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import type { User, Referral } from "@shared/schema";
 
 export default function Referrals() {
-  const { data: referrals } = useQuery({
+  const { toast } = useToast();
+
+  const { data: referrals } = useQuery<Referral[]>({
     queryKey: ["/api/referrals/1"], // Mock user ID
   });
 
-  const { data: user } = useQuery({
+  const { data: user } = useQuery<User>({
     queryKey: ["/api/user/1"], // Mock user ID
   });
+
+  const handleCopyCode = () => {
+    if (user?.referralCode) {
+      navigator.clipboard.writeText(user.referralCode);
+      toast({
+        title: "Referral code copied!",
+        description: "Share this code with your friends to earn points.",
+      });
+    }
+  };
 
   return (
     <div className="space-y-8 p-8">
       <h1 className="text-3xl font-bold">Referrals</h1>
 
-      <div className="rounded-lg border p-4 space-y-4">
-        <h2 className="text-lg font-semibold">Your Referral Code</h2>
+      <div className="rounded-lg border p-6 space-y-4">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-semibold">Your Referral Code</h2>
+          <p className="text-sm text-muted-foreground">
+            Share this code with friends to earn points when they sign up
+          </p>
+        </div>
         <div className="flex gap-4">
           <Input
             value={user?.referralCode || ""}
             readOnly
-            className="font-mono"
+            className="font-mono text-lg"
           />
-          <Button onClick={() => navigator.clipboard.writeText(user?.referralCode || "")}>
+          <Button onClick={handleCopyCode} className="min-w-[100px]">
+            <Copy className="h-4 w-4 mr-2" />
             Copy
           </Button>
         </div>
@@ -57,6 +78,13 @@ export default function Referrals() {
                 </TableCell>
               </TableRow>
             ))}
+            {!referrals?.length && (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
+                  No referrals yet. Share your code to start earning points!
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
