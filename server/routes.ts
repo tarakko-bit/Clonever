@@ -52,7 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       password: "password123",
       telegramId: null,
       points: "1000.00",
-      referralCode: null,
+      referralCode: null, 
     });
     res.json(testUser);
   });
