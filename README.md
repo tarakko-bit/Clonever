@@ -1,6 +1,6 @@
-# Clonever - Crypto Engagement Platform
+# Clone Verifier - Crypto Verification Platform
 
-A dynamic cryptocurrency engagement platform with robust admin management and Telegram bot integration, focusing on secure user interactions and blockchain connectivity.
+A dynamic cryptocurrency verification platform with robust admin management and Telegram bot integration, focusing on secure user interactions and blockchain connectivity.
 
 ## Features
 
@@ -27,8 +27,8 @@ A dynamic cryptocurrency engagement platform with robust admin management and Te
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/tarakko-bit/Clonever.git
-cd Clonever
+git clone https://github.com/tarakko-bit/Clone-Verifier.git
+cd Clone-Verifier
 ```
 
 2. Install dependencies:
