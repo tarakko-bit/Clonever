@@ -1,4 +1,7 @@
+import { users, referrals, transactions } from "@shared/schema";
 import { type User, type InsertUser, type Referral, type InsertReferral, type Transaction, type InsertTransaction } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export interface IStorage {
@@ -6,7 +9,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByTelegramId(telegramId: string): Promise<User | undefined>;
-  getAllUsers(): Promise<Map<number, User>>;
+  getAllUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUserPoints(id: number, points: string): Promise<User>;
   updateUserTelegramId(id: number, telegramId: string): Promise<User>;
@@ -20,100 +23,84 @@ export interface IStorage {
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private referrals: Map<number, Referral>;
-  private transactions: Map<number, Transaction>;
-  private currentIds: { users: number; referrals: number; transactions: number };
-
-  constructor() {
-    this.users = new Map();
-    this.referrals = new Map();
-    this.transactions = new Map();
-    this.currentIds = { users: 1, referrals: 1, transactions: 1 };
-  }
-
-  async getAllUsers(): Promise<Map<number, User>> {
-    return this.users;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async getUserByTelegramId(telegramId: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.telegramId === telegramId);
+    const [user] = await db.select().from(users).where(eq(users.telegramId, telegramId));
+    return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentIds.users++;
-    const user: User = {
+    const referralCode = nanoid(8);
+    const [user] = await db.insert(users).values({
       ...insertUser,
-      id,
       points: "0.00",
       telegramId: null,
-      referralCode: nanoid(8), // Generate a unique 8-character referral code
-    };
-    this.users.set(id, user);
+      referralCode,
+    }).returning();
     return user;
   }
 
   async updateUserPoints(id: number, points: string): Promise<User> {
-    const user = await this.getUser(id);
-    if (!user) throw new Error("User not found");
-
-    const updatedUser = { ...user, points };
-    this.users.set(id, updatedUser);
-    return updatedUser;
+    const [user] = await db
+      .update(users)
+      .set({ points })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
   }
 
   async updateUserTelegramId(id: number, telegramId: string): Promise<User> {
-    const user = await this.getUser(id);
-    if (!user) throw new Error("User not found");
-
-    const updatedUser = { ...user, telegramId };
-    this.users.set(id, updatedUser);
-    return updatedUser;
+    const [user] = await db
+      .update(users)
+      .set({ telegramId })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
   }
 
   async getReferrals(referrerId: number): Promise<Referral[]> {
-    return Array.from(this.referrals.values()).filter(
-      referral => referral.referrerId === referrerId
-    );
+    return await db
+      .select()
+      .from(referrals)
+      .where(eq(referrals.referrerId, referrerId));
   }
 
   async createReferral(insertReferral: InsertReferral): Promise<Referral> {
-    const id = this.currentIds.referrals++;
-    const referral: Referral = {
-      ...insertReferral,
-      id,
-      points: "0.00",
-      createdAt: new Date(),
-    };
-    this.referrals.set(id, referral);
+    const [referral] = await db
+      .insert(referrals)
+      .values(insertReferral)
+      .returning();
     return referral;
   }
 
   async getTransactions(userId: number): Promise<Transaction[]> {
-    return Array.from(this.transactions.values()).filter(
-      transaction => transaction.userId === userId
-    );
+    return await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.userId, userId));
   }
 
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
-    const id = this.currentIds.transactions++;
-    const transaction: Transaction = {
-      ...insertTransaction,
-      id,
-      createdAt: new Date(),
-    };
-    this.transactions.set(id, transaction);
+    const [transaction] = await db
+      .insert(transactions)
+      .values(insertTransaction)
+      .returning();
     return transaction;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
