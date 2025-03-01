@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
+import { WalletConnect } from "./WalletConnect";
 
 export function Navbar() {
   const [location] = useLocation();
@@ -36,6 +37,9 @@ export function Navbar() {
                 </Link>
               ))}
             </div>
+          </div>
+          <div className="flex items-center">
+            <WalletConnect />
           </div>
         </div>
       </div>
