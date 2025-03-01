@@ -4,16 +4,17 @@ import { storage } from "./storage";
 import TelegramBot from "node-telegram-bot-api";
 import { insertUserSchema, insertReferralSchema, insertTransactionSchema } from "@shared/schema";
 import { setupAdminUsers } from "./adminSetup";
+import { setupAuth } from "./auth";
 
 // Mock conversion rate
 const POINTS_TO_USD_RATE = 0.01;
 
 function isAdmin(req: any) {
-  return req.user?.role === "ADMIN" || req.user?.role === "SUPERADMIN";
+  return req.isAuthenticated() && (req.user?.role === "ADMIN" || req.user?.role === "SUPERADMIN");
 }
 
 function isSuperAdmin(req: any) {
-  return req.user?.role === "SUPERADMIN";
+  return req.isAuthenticated() && req.user?.role === "SUPERADMIN";
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -21,6 +22,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup admin users on startup
   await setupAdminUsers();
+
+  // Setup authentication
+  setupAuth(app);
 
   // Initialize Telegram bot
   const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN || "mock_token", { polling: true });
@@ -143,20 +147,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin Routes
   app.get("/api/admin/users", async (req, res) => {
-    if (!isAdmin(req)) return res.status(403).send("Unauthorized");
+    if (!isAdmin(req)) return res.status(403).json({ message: "Unauthorized" });
     const users = await storage.getAllUsers();
     res.json(users);
   });
 
   app.get("/api/admin/referrals", async (req, res) => {
-    if (!isAdmin(req)) return res.status(403).send("Unauthorized");
+    if (!isAdmin(req)) return res.status(403).json({ message: "Unauthorized" });
     const referrals = await storage.getAllReferrals();
     res.json(referrals);
   });
 
   // SuperAdmin only routes
   app.post("/api/admin/bulk-send", async (req, res) => {
-    if (!isSuperAdmin(req)) return res.status(403).send("Unauthorized");
+    if (!isSuperAdmin(req)) return res.status(403).json({ message: "Unauthorized" });
     const { transactions } = req.body;
     // Implementation for bulk send will go here
     res.json({ status: "Processing bulk transactions" });
