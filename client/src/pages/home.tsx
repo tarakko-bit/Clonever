@@ -2,9 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Coins, Users, Wallet } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { ConversionChart } from "@/components/dashboard/ConversionChart";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatPoints, getTelegramLoginUrl } from "@/lib/telegram";
+import { TelegramConnect } from "@/components/dashboard/TelegramConnect";
+import { formatPoints } from "@/lib/telegram";
 import type { User, Referral } from "@shared/schema";
 
 interface ConversionRate {
@@ -50,31 +49,8 @@ export default function Home() {
         />
       </div>
 
-      {!user?.telegramId && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Connect Telegram</CardTitle>
-            <CardDescription>
-              Link your Telegram account to start using your referral code. Follow these steps:
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <p className="font-medium">Your Referral Code: {user?.referralCode}</p>
-              <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
-                <li>Click the button below to open Telegram</li>
-                <li>Start a chat with our bot</li>
-                <li>Send the command: /link {user?.referralCode}</li>
-              </ol>
-            </div>
-            <Button asChild>
-              <a href={getTelegramLoginUrl()} target="_blank" rel="noopener noreferrer">
-                Connect with Telegram
-              </a>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      {/* Show Telegram connection status */}
+      <TelegramConnect />
 
       <ConversionChart />
     </div>
