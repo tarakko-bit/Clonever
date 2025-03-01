@@ -2,7 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Coins, Users, Wallet } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { ConversionChart } from "@/components/dashboard/ConversionChart";
-import { formatPoints } from "@/lib/telegram";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatPoints, getTelegramLoginUrl } from "@/lib/telegram";
 import type { User, Referral } from "@shared/schema";
 
 interface ConversionRate {
@@ -47,6 +49,24 @@ export default function Home() {
           icon={<Users className="h-4 w-4 text-muted-foreground" />}
         />
       </div>
+
+      {!user?.telegramId && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Connect Telegram</CardTitle>
+            <CardDescription>
+              Link your Telegram account to manage your points and receive notifications
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <a href={getTelegramLoginUrl()} target="_blank" rel="noopener noreferrer">
+                Connect with Telegram
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <ConversionChart />
     </div>

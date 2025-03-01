@@ -16,14 +16,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bot commands
   bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
+    const username = msg.from?.username;
     const user = await storage.getUserByTelegramId(chatId.toString());
 
     if (!user) {
-      bot.sendMessage(chatId, "Welcome! Please register on our website first.");
+      bot.sendMessage(chatId, 
+        "Welcome! Please provide your referral code to link your account.\n" +
+        "Use the command: /link YOUR_REFERRAL_CODE"
+      );
       return;
     }
 
     bot.sendMessage(chatId, `Welcome back ${user.username}! Use /balance to check your points.`);
+  });
+
+  bot.onText(/\/link (.+)/, async (msg, match) => {
+    if (!match) return;
+
+    const chatId = msg.chat.id;
+    const referralCode = match[1];
+
+    // Find user by referral code
+    const users = Array.from((await storage.getAllUsers()).values());
+    const user = users.find(u => u.referralCode === referralCode);
+
+    if (!user) {
+      bot.sendMessage(chatId, "Invalid referral code. Please try again.");
+      return;
+    }
+
+    if (user.telegramId) {
+      bot.sendMessage(chatId, "This account is already linked to Telegram.");
+      return;
+    }
+
+    // Update user's telegram ID
+    await storage.updateUserTelegramId(user.id, chatId.toString());
+    bot.sendMessage(chatId, 
+      "Successfully linked your account!\n" +
+      "You can now use the following commands:\n" +
+      "/balance - Check your points balance\n" +
+      "/referrals - View your referral statistics"
+    );
   });
 
   bot.onText(/\/balance/, async (msg) => {
@@ -31,7 +65,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const user = await storage.getUserByTelegramId(chatId.toString());
 
     if (!user) {
-      bot.sendMessage(chatId, "Please register on our website first.");
+      bot.sendMessage(chatId, "Please link your account first using /link YOUR_REFERRAL_CODE");
       return;
     }
 
@@ -52,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       password: "password123",
       telegramId: null,
       points: "1000.00",
-      referralCode: null, 
+      referralCode: null,
     });
     res.json(testUser);
   });

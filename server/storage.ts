@@ -6,8 +6,10 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByTelegramId(telegramId: string): Promise<User | undefined>;
+  getAllUsers(): Promise<Map<number, User>>;
   createUser(user: InsertUser): Promise<User>;
   updateUserPoints(id: number, points: string): Promise<User>;
+  updateUserTelegramId(id: number, telegramId: string): Promise<User>;
 
   // Referral operations
   getReferrals(referrerId: number): Promise<Referral[]>;
@@ -29,6 +31,10 @@ export class MemStorage implements IStorage {
     this.referrals = new Map();
     this.transactions = new Map();
     this.currentIds = { users: 1, referrals: 1, transactions: 1 };
+  }
+
+  async getAllUsers(): Promise<Map<number, User>> {
+    return this.users;
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -61,6 +67,15 @@ export class MemStorage implements IStorage {
     if (!user) throw new Error("User not found");
 
     const updatedUser = { ...user, points };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserTelegramId(id: number, telegramId: string): Promise<User> {
+    const user = await this.getUser(id);
+    if (!user) throw new Error("User not found");
+
+    const updatedUser = { ...user, telegramId };
     this.users.set(id, updatedUser);
     return updatedUser;
   }
