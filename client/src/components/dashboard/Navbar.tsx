@@ -9,6 +9,7 @@ export function Navbar() {
     { href: "/", label: "Dashboard" },
     { href: "/referrals", label: "Referrals" },
     { href: "/convert", label: "Convert" },
+    { href: "/news", label: "News" },
   ];
 
   return (
