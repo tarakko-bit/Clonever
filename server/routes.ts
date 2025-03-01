@@ -3,8 +3,6 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import TelegramBot from "node-telegram-bot-api";
 import { insertUserSchema, insertReferralSchema, insertTransactionSchema } from "@shared/schema";
-import { newsService } from "./services/news";
-import { insertUserNewsPreferencesSchema } from "@shared/schema";
 
 // Mock conversion rate
 const POINTS_TO_USD_RATE = 0.01;
@@ -130,36 +128,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/convert/rate", (_req, res) => {
     res.json({ rate: POINTS_TO_USD_RATE });
   });
-
-  // News routes
-  app.get("/api/news", async (_req, res) => {
-    const articles = await storage.listNews();
-    res.json(articles);
-  });
-
-  app.get("/api/news/recommended/:userId", async (req, res) => {
-    const articles = await storage.getRecommendedNews(parseInt(req.params.userId));
-    res.json(articles);
-  });
-
-  app.get("/api/news/preferences/:userId", async (req, res) => {
-    const preferences = await storage.getUserNewsPreferences(parseInt(req.params.userId));
-    res.json(preferences);
-  });
-
-  app.post("/api/news/preferences/:userId", async (req, res) => {
-    const parsed = insertUserNewsPreferencesSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json(parsed.error);
-
-    const userId = parseInt(req.params.userId);
-    const preferences = await storage.updateUserNewsPreferences(userId, parsed.data);
-    res.json(preferences);
-  });
-
-  // Sync news from external API every 30 minutes
-  setInterval(() => {
-    newsService.syncNewsToDatabase().catch(console.error);
-  }, 30 * 60 * 1000);
 
   return httpServer;
 }

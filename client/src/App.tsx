@@ -7,7 +7,6 @@ import { Navbar } from "@/components/dashboard/Navbar";
 import Home from "@/pages/home";
 import Referrals from "@/pages/referrals";
 import Convert from "@/pages/convert";
-import News from "@/pages/news";
 
 function Router() {
   return (
@@ -18,7 +17,6 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/referrals" component={Referrals} />
           <Route path="/convert" component={Convert} />
-          <Route path="/news" component={News} />
           <Route component={NotFound} />
         </Switch>
       </main>
