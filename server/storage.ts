@@ -1,4 +1,5 @@
 import { type User, type InsertUser, type Referral, type InsertReferral, type Transaction, type InsertTransaction } from "@shared/schema";
+import { nanoid } from "nanoid";
 
 export interface IStorage {
   // User operations
@@ -49,7 +50,7 @@ export class MemStorage implements IStorage {
       id,
       points: "0.00",
       telegramId: null,
-      referralCode: null,
+      referralCode: nanoid(8), // Generate a unique 8-character referral code
     };
     this.users.set(id, user);
     return user;
