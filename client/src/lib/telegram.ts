@@ -1,4 +1,4 @@
-export const TELEGRAM_BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'YourBotName';
+export const TELEGRAM_BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'clonehodlbot';
 
 export function getTelegramLoginUrl() {
   return `https://t.me/${TELEGRAM_BOT_USERNAME}`;
