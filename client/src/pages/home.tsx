@@ -55,10 +55,18 @@ export default function Home() {
           <CardHeader>
             <CardTitle>Connect Telegram</CardTitle>
             <CardDescription>
-              Link your Telegram account to manage your points and receive notifications
+              Link your Telegram account to start using your referral code. Follow these steps:
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <p className="font-medium">Your Referral Code: {user?.referralCode}</p>
+              <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
+                <li>Click the button below to open Telegram</li>
+                <li>Start a chat with our bot</li>
+                <li>Send the command: /link {user?.referralCode}</li>
+              </ol>
+            </div>
             <Button asChild>
               <a href={getTelegramLoginUrl()} target="_blank" rel="noopener noreferrer">
                 Connect with Telegram
