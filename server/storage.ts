@@ -16,6 +16,7 @@ export interface IStorage {
 
   // Referral operations
   getReferrals(referrerId: number): Promise<Referral[]>;
+  getAllReferrals(): Promise<Referral[]>;
   createReferral(referral: InsertReferral): Promise<Referral>;
 
   // Transaction operations
@@ -77,6 +78,10 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(referrals)
       .where(eq(referrals.referrerId, referrerId));
+  }
+
+  async getAllReferrals(): Promise<Referral[]> {
+    return await db.select().from(referrals);
   }
 
   async createReferral(insertReferral: InsertReferral): Promise<Referral> {

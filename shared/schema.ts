@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, decimal, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, decimal, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -9,6 +9,10 @@ export const users = pgTable("users", {
   telegramId: text("telegram_id").unique(),
   points: decimal("points", { precision: 10, scale: 2 }).default("0").notNull(),
   referralCode: text("referral_code").unique(),
+  role: text("role", { enum: ["USER", "ADMIN", "SUPERADMIN"] }).default("USER").notNull(),
+  solanaWallet: text("solana_wallet"),
+  isActive: boolean("is_active").default(true).notNull(),
+  lastLogin: timestamp("last_login"),
 });
 
 export const referrals = pgTable("referrals", {
@@ -30,7 +34,6 @@ export const transactions = pgTable("transactions", {
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertReferralSchema = createInsertSchema(referrals).omit({ id: true, createdAt: true });
 export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, createdAt: true });
-
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;

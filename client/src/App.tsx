@@ -7,6 +7,8 @@ import { Navbar } from "@/components/dashboard/Navbar";
 import Home from "@/pages/home";
 import Referrals from "@/pages/referrals";
 import Convert from "@/pages/convert";
+import AdminLogin from "@/pages/admin/login";
+import AdminDashboard from "@/pages/admin/dashboard";
 
 function Router() {
   return (
@@ -17,6 +19,8 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/referrals" component={Referrals} />
           <Route path="/convert" component={Convert} />
+          <Route path="/admin/login" component={AdminLogin} />
+          <Route path="/admin/dashboard" component={AdminDashboard} />
           <Route component={NotFound} />
         </Switch>
       </main>

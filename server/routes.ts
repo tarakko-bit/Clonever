@@ -3,12 +3,24 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import TelegramBot from "node-telegram-bot-api";
 import { insertUserSchema, insertReferralSchema, insertTransactionSchema } from "@shared/schema";
+import { setupAdminUsers } from "./adminSetup";
 
 // Mock conversion rate
 const POINTS_TO_USD_RATE = 0.01;
 
+function isAdmin(req: any) {
+  return req.user?.role === "ADMIN" || req.user?.role === "SUPERADMIN";
+}
+
+function isSuperAdmin(req: any) {
+  return req.user?.role === "SUPERADMIN";
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
+
+  // Setup admin users on startup
+  await setupAdminUsers();
 
   // Initialize Telegram bot
   const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN || "mock_token", { polling: true });
@@ -127,6 +139,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/convert/rate", (_req, res) => {
     res.json({ rate: POINTS_TO_USD_RATE });
+  });
+
+  // Admin Routes
+  app.get("/api/admin/users", async (req, res) => {
+    if (!isAdmin(req)) return res.status(403).send("Unauthorized");
+    const users = await storage.getAllUsers();
+    res.json(users);
+  });
+
+  app.get("/api/admin/referrals", async (req, res) => {
+    if (!isAdmin(req)) return res.status(403).send("Unauthorized");
+    const referrals = await storage.getAllReferrals();
+    res.json(referrals);
+  });
+
+  // SuperAdmin only routes
+  app.post("/api/admin/bulk-send", async (req, res) => {
+    if (!isSuperAdmin(req)) return res.status(403).send("Unauthorized");
+    const { transactions } = req.body;
+    // Implementation for bulk send will go here
+    res.json({ status: "Processing bulk transactions" });
   });
 
   return httpServer;
