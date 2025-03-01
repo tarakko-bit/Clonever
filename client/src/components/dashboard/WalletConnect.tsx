@@ -1,31 +1,54 @@
-import { useState, useCallback } from 'react';
-import { Keypair } from '@solana/web3.js';
+import { useState, useCallback, useEffect } from 'react';
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { Button } from "@/components/ui/button";
 import { solanaService } from '@/lib/solana';
+import { useToast } from "@/hooks/use-toast";
 
 export function WalletConnect() {
   const [publicKey, setPublicKey] = useState<string | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
+  const [wallet] = useState(() => new PhantomWalletAdapter());
+  const { toast } = useToast();
 
-  const generateWallet = useCallback(async () => {
-    const wallet = Keypair.generate();
-    const publicKeyStr = wallet.publicKey.toString();
-    setPublicKey(publicKeyStr);
+  useEffect(() => {
+    // Initialize wallet
+    wallet.connect().catch(console.error);
 
-    // Request airdrop for testing
-    try {
-      await solanaService.requestAirdrop(publicKeyStr);
-      const balance = await solanaService.getBalance(publicKeyStr);
-      setBalance(balance);
-    } catch (error) {
-      console.error('Error getting SOL balance:', error);
+    return () => {
+      wallet.disconnect().catch(console.error);
+    };
+  }, [wallet]);
+
+  const connectWallet = useCallback(async () => {
+    if (!wallet.connected) {
+      try {
+        await wallet.connect();
+        const publicKeyStr = wallet.publicKey?.toString();
+        if (publicKeyStr) {
+          setPublicKey(publicKeyStr);
+          const balance = await solanaService.getBalance(publicKeyStr);
+          setBalance(balance);
+        }
+      } catch (error) {
+        console.error('Error connecting wallet:', error);
+        toast({
+          variant: "destructive",
+          title: "Connection Error",
+          description: "Could not connect to Phantom wallet. Please make sure it's installed.",
+        });
+      }
     }
-  }, []);
+  }, [wallet, toast]);
 
-  const disconnect = useCallback(() => {
-    setPublicKey(null);
-    setBalance(null);
-  }, []);
+  const disconnect = useCallback(async () => {
+    try {
+      await wallet.disconnect();
+      setPublicKey(null);
+      setBalance(null);
+    } catch (error) {
+      console.error('Error disconnecting wallet:', error);
+    }
+  }, [wallet]);
 
   if (publicKey) {
     return (
@@ -46,8 +69,8 @@ export function WalletConnect() {
   }
 
   return (
-    <Button onClick={generateWallet} className="text-sm">
-      Connect Wallet
+    <Button onClick={connectWallet} className="text-sm">
+      Connect Phantom
     </Button>
   );
 }
